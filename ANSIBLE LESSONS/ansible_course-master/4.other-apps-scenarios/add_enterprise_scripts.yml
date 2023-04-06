@@ -1,0 +1,19 @@
+- hosts: all
+  become: true
+
+  tasks:
+    - name: Add exclude script.
+      ansible.builtin.copy: # скрипт исключения из продакшена, для демонстрации работы с продакшеном
+        src: files/exclude_from_prod.py
+        dest: /home/vagrant/exclude_from_prod.py
+        owner: vagrant
+        group: vagrant
+        mode: "0755" # исполняемый файл, поэтому 755, где 7 - полные права для владельца
+
+    - name: Add include script.
+      ansible.builtin.copy:  # скрипт включения в продакшен, для демонстрации работы с продакшеном
+        src: files/include_to_prod.py
+        dest: /home/vagrant/include_to_prod.py
+        owner: vagrant
+        group: vagrant
+        mode: "0755"

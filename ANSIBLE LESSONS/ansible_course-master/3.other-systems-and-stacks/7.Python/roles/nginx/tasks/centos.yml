@@ -1,0 +1,29 @@
+- name: "Install epel-release yum"
+  ansible.builtin.yum:
+    name: epel-release
+    update_cache: yes
+    state: latest
+  when: ansible_os_family == "RedHat"
+
+- name: "Install nginx yum"
+  ansible.builtin.yum:
+    name: nginx
+    update_cache: yes
+    state: latest
+  when: ansible_os_family == "RedHat"
+
+- name: "replace main nginx config"
+  ansible.builtin.copy:
+    src: files/centos.nginx.conf
+    dest: /etc/nginx/nginx.conf
+    owner: vagrant
+    group: vagrant
+    mode: 0644
+
+- name: "replace default config"
+  ansible.builtin.template:
+    src: files/default.centos.conf.j2
+    dest: /etc/nginx/default.d/default.conf
+    owner: vagrant
+    group: vagrant
+    mode: 0644

@@ -1,0 +1,60 @@
+---
+- name: "Installing python"
+  hosts: "no_python"
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: "Raw python install"
+    raw: apt -y update && apt install -y python3-minimal
+    args:
+      executable: /bin/bash
+
+
+- name: "Setting venv and deploy an app"
+  hosts: "no_python"
+  become: true
+  vars:
+    app_name: "hello"
+  roles:
+    - nginx
+  tasks:
+  - name: "Copy python files"
+    ansible.builtin.copy:
+      src: files/app
+      dest: /apps/{{app_name}}
+      owner: vagrant
+      group: vagrant
+      mode: 0644
+#    debugger: always
+
+  - name: Install python deps
+    apt:
+      name:
+        - python3-pip
+        - python3-setuptools
+      state: latest
+      update_cache: True
+
+  - name: Install virtualenv via pip
+    pip:
+      name: virtualenv
+      executable: pip3
+
+  - name: Install requirements
+    pip:
+      requirements: /apps/{{app_name}}/app/requirements.txt
+      virtualenv:  /apps/{{app_name}}/venv
+
+  - name: Copy service file
+    ansible.builtin.template:
+      src: service.service.j2
+      dest: /etc/systemd/system/{{app_name}}.service
+      owner: vagrant
+      group: vagrant
+      mode: 0644
+
+  - name: "Start service"
+    service:
+      name: "{{ app_name }}"
+      state: started

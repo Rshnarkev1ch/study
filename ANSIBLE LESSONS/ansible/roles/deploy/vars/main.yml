@@ -1,0 +1,3 @@
+---
+# vars file for deploy
+destin_file: /var/www/html

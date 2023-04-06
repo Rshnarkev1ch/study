@@ -1,0 +1,9 @@
+server {
+        listen {{nginx_port}};
+
+        server_name _;
+
+        location / {
+            proxy_pass http://unix:/apps/{{app_name}}/app/{{app_name}}.sock;
+        }
+}

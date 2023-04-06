@@ -1,0 +1,30 @@
+---
+- hosts: all
+  become: true
+
+  tasks:
+    - name: Add ansible repository.
+      ansible.builtin.apt_repository: # добавляем репозиторий
+        repo: 'ppa:ansible/ansible'
+        update_cache: true
+
+    - name: Install Ansible.
+      ansible.builtin.apt:
+        name: ansible
+        state: "latest"
+
+    - name: Copy private key
+      ansible.builtin.copy:
+        src: files/vagrant_test
+        dest: /home/vagrant/.ssh/vagrant_test
+        owner: vagrant
+        group: vagrant
+        mode: "0600"
+
+    - name: Copy public key
+      ansible.builtin.copy:
+        src: files/vagrant_test.pub
+        dest: /home/vagrant/.ssh/vagrant_test.pub
+        owner: vagrant
+        group: vagrant
+        mode: "0644"

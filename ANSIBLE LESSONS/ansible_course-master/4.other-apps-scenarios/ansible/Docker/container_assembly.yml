@@ -1,0 +1,35 @@
+- name: create image dir
+  file:
+    path: /home/vagrant/dockerfiles/{{item.path.split('/')[-1]}} # поскольку путь приходит целиком а нам нужно толкьо имя, отрежем последнюю часть
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: copy Dockerfile
+  copy:
+    src: "{{item.path}}/Dockerfile"
+    dest: "/home/vagrant/dockerfiles/{{item.path | basename}}/Dockerfile" # копируем докерфайл
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: build container image
+  docker_image:
+    name: "{{item.path | basename}}_container:v1.0" # просто билдим контейнер, с помощью docker sdk
+    build:
+      path: "/home/vagrant/dockerfiles/{{item.path | basename}}/"
+    state: present
+
+- name: archive container image as a tarball
+  docker_image: # архивируем результат и кладем в папку
+    name: "{{item.path | basename}}_container:v1.0"
+    archive_path: "/root/{{item.path | basename}}_container:v1.0.tar"
+    source: pull
+    state: present
+
+- name: fetch archived image # забираем результат на нашу машину, fetch всегда работает как локальная команда, забирая файлы с удаленной машины
+  fetch:
+    src: "/home/vagrant/{{item.path | basename}}_container:v1.0.tar"
+    dest: "files/{{item.path | basename}}_container:v1.0.tar"
+    flat: true

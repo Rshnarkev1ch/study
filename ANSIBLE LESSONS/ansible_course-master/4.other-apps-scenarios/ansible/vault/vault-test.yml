@@ -1,0 +1,11 @@
+- name: "Test vault"
+  hosts: localhost
+  gather_facts: false
+  tasks:
+  - name: Include vars of stuff.yaml into the 'stuff' variable (2.2).
+    include_vars:
+      file: "vault-encr-vars.yml"
+      name: secrets
+  - name: "Print stuff from vault"
+    ansible.builtin.debug:
+      msg: "msg {{secrets.password}}"

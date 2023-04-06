@@ -1,0 +1,31 @@
+all:
+  children:
+    postgres:
+      hosts:
+        postgres_master:
+          ansible_host: 192.168.51.2
+        postgres_slave:
+          ansible_host: 192.168.51.3
+    postgres_slaves:
+      hosts:
+        postgres_slave:
+          ansible_host: 192.168.51.3
+    mongo:
+      hosts:
+        mongo_primary:
+          ansible_host: 192.168.52.2
+          mongodb_master: True
+        mongo_secondary:
+          ansible_host: 192.168.52.3
+        mongo_arbiter:
+          ansible_host: 192.168.52.4
+# запись эквивалентна записи в ini
+# [postgres]
+# postgres_master ansible_host=192.168.51.2
+# postgres_slave ansible_host=192.168.51.3
+# [postgres_slaves]
+# postgres_slave ansible_host=192.168.51.3
+# [mongo]
+# mongo_primary ansible_host=192.168.52.2 mongodb_master=True
+# mongo_secondary ansible_host=192.168.52.3 mongodb_master=True
+# mongo_arbiter ansible_host=192.168.52.4 mongodb_master=True

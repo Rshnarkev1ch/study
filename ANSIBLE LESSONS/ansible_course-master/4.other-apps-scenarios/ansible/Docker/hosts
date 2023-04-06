@@ -1,0 +1,8 @@
+all:
+  children:
+    docker:
+      hosts:
+        build_host:
+          ansible_host: 192.168.53.2
+        runner_host:
+          ansible_host: 192.168.53.3

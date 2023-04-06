@@ -1,0 +1,17 @@
+---
+# tasks file for deploy
+- name: Check linux version
+  ansible.builtin.debug:
+    var: ansible_os_family
+- name: Install apache
+  ansible.builtin.apt:
+    name: apache2
+    state: present
+  when: ansible_os_family == "Debian"
+- name: Copy destin_file
+  ansible.builtin.copy:
+    src: "{{ source_file }}"
+    dest: "{{ destin_file }}"
+    mode: preserve
+  notify:
+   - Restart

@@ -1,0 +1,12 @@
+---
+- hosts: all
+  become: true
+
+  tasks:
+    - name: Copy public key
+      ansible.builtin.copy: # копируем ключ на удаленную машину, чтобы позволить авторизацию по ssh
+        src: files/vagrant_test.pub
+        dest: /home/vagrant/.ssh/vagrant_test.pub
+        owner: vagrant
+        group: vagrant
+        mode: "0644"

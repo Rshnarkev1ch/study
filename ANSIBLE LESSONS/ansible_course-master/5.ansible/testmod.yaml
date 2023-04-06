@@ -1,0 +1,31 @@
+- name: test clickhouse module
+  hosts: all
+  tasks:
+  - name: install pip3
+    apt:
+      name: python3-pip
+  - name: install clickhouse-driver
+    pip:
+      name: clickhouse-driver
+  - name: create CH user
+    no_log: true
+    clickhouse:
+      login_user: default
+      login_password: ""
+      user: new_user
+      password: new_user
+    register: testout
+  - name: dump test output
+    debug:
+      msg: '{{ testout }}'
+  - name: delete CH user
+    no_log: true
+    clickhouse:
+      login_user: default
+      login_password: ""
+      user: new_user
+      state: non_absent
+    register: testout
+  - name: dump test output
+    debug:
+      msg: '{{ testout }}'

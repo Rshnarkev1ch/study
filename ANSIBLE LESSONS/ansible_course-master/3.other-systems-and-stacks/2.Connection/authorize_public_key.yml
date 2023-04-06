@@ -1,0 +1,13 @@
+---
+- name: ""
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Copy public key
+      ansible.builtin.copy:
+        src: files/vagrant_test.pub
+        dest: /home/vagrant/.ssh/vagrant_test.pub
+        owner: vagrant
+        group: vagrant
+        mode: u=rw,g=r,o=r

@@ -1,0 +1,9 @@
+---
+- name: "Scratch the server" # прсото плейбук с готовым наобром хостов
+  hosts: all
+  gather_facts: true
+  gather_subset: min
+  tasks:
+    - name: "Show facts"
+      ansible.builtin.debug:
+        msg: "Facts are {{ansible_facts}}"

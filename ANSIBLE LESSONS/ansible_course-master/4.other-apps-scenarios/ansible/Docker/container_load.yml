@@ -1,0 +1,18 @@
+---
+- name: copy tarball to host # копируем контейнер
+  copy:
+    src: "files/{{item.path | basename}}"
+    dest: "/home/vagrant/{{item.path | basename}}"
+
+- name: load container from tarball # загружаем контейнер из архива
+  docker_image:
+    name: "{{item.path | splitext | first}}"
+    load_path: "/home/vagrant/{{item.path | basename}}"
+    state: present
+    source: load
+
+- name: run container # запускаем контейнер
+  docker_container:
+    name: "{{(item.path | basename).split('_') | first }}_app"
+    image: "{{item.path | basename | splitext | first}}"
+    state: started

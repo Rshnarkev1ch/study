@@ -1,0 +1,26 @@
+- name: "Install nginx apt"
+  ansible.builtin.apt:
+    name: nginx
+    update_cache: yes
+    state: latest
+
+- name: "replace default config"
+  ansible.builtin.template:
+    src: files/default.conf.j2
+    dest: /etc/nginx/sites-available/default.conf
+    owner: vagrant
+    group: vagrant
+    mode: 0644
+
+- name: "Delete old default"
+  ansible.builtin.file:
+    state: absent
+    path: /etc/nginx/sites-enabled/default
+
+- name: "Create a symbolic link"
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/default.conf
+    dest: /etc/nginx/sites-enabled/default
+    owner: vagrant
+    group: vagrant
+    state: link

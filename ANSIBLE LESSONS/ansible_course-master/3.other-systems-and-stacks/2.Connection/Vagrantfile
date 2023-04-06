@@ -1,0 +1,82 @@
+  # -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+  # The most common configuration options are documented and commented below.
+  # For a complete reference, please see the online documentation at
+  # https://docs.vagrantup.com.
+
+  config.vm.define "controlnode" do |controlnode|
+    controlnode.vm.box = "ubuntu/focal64"
+    controlnode.vm.hostname = "controlnode"
+    controlnode.vm.network "private_network", ip: "192.168.56.4"
+    controlnode.vm.synced_folder "./ansible","/home/vagrant/ansible"
+    controlnode.vm.provision "shell", inline: <<-SHELL
+      sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/#g' /etc/ssh/sshd_config
+      service ssh restart
+    SHELL
+    controlnode.vm.provision "ansible" do |ansible|
+        ansible.playbook = "install_ansible.yml"
+    end
+  end
+
+  # Every Vagrant development environment requires a box. You can search for
+  # boxes at https://vagrantcloud.com/search.
+  config.vm.define "server" do |server|
+    server.vm.box = "ubuntu/focal64"
+    server.vm.hostname = "ubuntu"
+    server.vbguest.auto_update = false
+    server.vm.network "private_network", ip: "192.168.57.4"
+    server.vm.provision "ansible" do |ansible|
+        ansible.playbook = "authorize_public_key.yml"
+    end
+    server.vm.provision "shell", inline: <<-SHELL
+         cat /home/vagrant/.ssh/vagrant_test.pub >> /home/vagrant/.ssh/authorized_keys
+    SHELL
+  end
+
+  config.vm.define "server_no_python" do |server_no_python|
+    server_no_python.vm.box = "ubuntu/focal64"
+    server_no_python.vm.hostname = "no-python"
+    server_no_python.vbguest.auto_update = false
+    server_no_python.vm.network "private_network", ip: "192.168.57.2"
+    server_no_python.vm.provision "ansible" do |ansible|
+       ansible.playbook = "authorize_public_key.yml"
+    end
+    server_no_python.vm.provision "shell", inline: <<-SHELL
+        cat /home/vagrant/.ssh/vagrant_test.pub >> /home/vagrant/.ssh/authorized_keys
+        sudo apt -y remove python3 && sudo apt -y autoremove
+    SHELL
+  end
+
+
+  config.vm.define "server_centos" do |server_centos|
+    server_centos.vm.box = "bento/centos-7.5"
+    server_centos.vm.hostname = "centos"
+    server_centos.vbguest.auto_update = false
+    server_centos.vm.network "private_network", ip: "192.168.57.3"
+    server_centos.vm.provision "ansible" do |ansible|
+       ansible.playbook = "authorize_public_key.yml"
+    end
+    server_centos.vm.provision "shell", inline: <<-SHELL
+         cat /home/vagrant/.ssh/vagrant_test.pub >> /home/vagrant/.ssh/authorized_keys
+    SHELL
+  end
+
+  config.vm.define "server_centos_python" do |server_centos_python|
+    server_centos_python.vm.box = "bento/centos-7.5"
+    server_centos_python.vm.hostname = "centos"
+    server_centos_python.vbguest.auto_update = false
+    server_centos_python.vm.network "private_network", ip: "192.168.57.5"
+    server_centos_python.vm.provision "ansible" do |ansible|
+       ansible.playbook = "authorize_public_key.yml"
+    end
+    server_centos_python.vm.provision "shell", inline: <<-SHELL
+         cat /home/vagrant/.ssh/vagrant_test.pub >> /home/vagrant/.ssh/authorized_keys
+    SHELL
+  end
+end

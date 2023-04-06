@@ -1,0 +1,40 @@
+- name: "Installing mongo and creating replicaset" # в отличие от плейбука postgres мы тут просто включаем переменные для роли монго
+  become: true
+  hosts: mongo
+  vars:
+    mongodb_login_host: "{{ hostvars.mongo_primary.ansible_host }}" # главный хост с данными авторизации
+    mongodb_security_authorization: 'disabled'
+    mongodb_net_bindip: "{{ ansible_host }}" # указываем монге что слушать
+    mongodb_replication_replset: "mongo_r1" # имя группы репликации
+    mongodb_replication_params:
+      - {
+        host_name: "{{ hostvars.mongo_primary.ansible_host }}",
+        host_type: replica,
+      }
+      - {
+        host_name: "{{ hostvars.mongo_secondary.ansible_host }}",
+        host_type: replica,
+      }
+      - {
+        host_name: "{{ hostvars.mongo_arbiter.ansible_host }}",
+        host_type: arbiter, # в отличие от реплик, он будет решать кто щас мастер а кто нет
+      }
+
+  pre_tasks:
+    - name: "Exclude server from production"
+      delegate_to: 127.0.0.1
+      script: '/home/vagrant/exclude_from_prod.py'
+      register: command_result
+      failed_when: "'error' in command_result.stdout"
+      changed_when: "'success' in command_result.stdout"
+
+  roles:
+    - green.mongodb
+
+  post_tasks:
+    - name: "Include server to production"
+      delegate_to: 127.0.0.1
+      script: '/home/vagrant/include_to_prod.py {{ansible_host}}'
+      register: command_result
+      failed_when: "'error' in command_result.stdout"
+      changed_when: "'success' in command_result.stdout"

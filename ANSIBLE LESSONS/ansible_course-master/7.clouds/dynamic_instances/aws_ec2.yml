@@ -1,0 +1,15 @@
+plugin: aws_ec2 # конфигуратор плагина соединения с AWS
+aws_profile: default
+
+cache: true # кешируем...
+cache_plugin: jsonfile #... в json файле
+cache_connection: ./ # ...а файл то у нас в той же папке
+keyed_groups: # делаем группы серверов базируясь на архитектуре и вторую базируем на тегах
+  # Add e.g. x86_64 hosts to an arch_x86_64 group
+  - prefix: arch
+    key: 'architecture'
+  # Add hosts to tag_Name_Value groups for each Name/Value tag pair
+  - prefix: tag
+    key: tags
+aws_access_key:
+aws_secret_key:

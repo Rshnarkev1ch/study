@@ -1,0 +1,57 @@
+---
+- name: "Create a EC2 instance"
+  hosts: localhost
+  gather_facts: false
+  tasks:
+  - name: "Create an instance"
+    amazon.aws.ec2: # один из самых больших модулей, с огромным числом настроек
+      key_name: ansiblekey # имя ключа
+      region: us-east-2 # регион, важно здесь указать не имя группы (типа us-east-2a, us-east-2b и тд)
+      aws_access_key: AKIAXCQMX4YHR7SEWMPB # можно передать как переменные ENV
+      aws_secret_key: $$$$$$$$$$$$$$$$$$$$$$$$$$$
+      instance_type: t2.micro
+      image: ami-0ba62214afa52bec7 # подобно докер имейджу - какой то базовый образ с библиотеками
+      wait: yes
+      group: launch-wizard-1 # группа запуска
+      count: 2 # сколько нужно
+      vpc_subnet_id: subnet-5da52d36
+      instance_tags:
+        group: web
+    register: ec2
+
+
+  - name: Add new instance to host group
+    add_host:
+      hostname: "{{ item.public_ip }}"
+      groupname: webs
+    loop: "{{ ec2.instances }}"
+
+  - name: Wait for SSH to come up
+    delegate_to: "{{ item.public_dns_name }}"
+    wait_for_connection: # ждем подключения с отсрочкой 60 секунд, чтобы не получить unreachable в дальнейшем
+      delay: 60
+      timeout: 320 # если не подключились в течение 320 секунд - штош, рапортуем об ошибке и не идем дальше
+    loop: "{{ ec2.instances }}"
+
+
+- name: Configure instance(s) # что то там конфигурируем
+  hosts: webs
+  become: True
+  gather_facts: True
+  tasks:
+  - name: "Show facts"
+    ansible.builtin.debug:
+      msg: "Facts are {{ansible_facts}}"
+
+
+- name: Terminate instances
+  hosts: localhost
+  gather_facts: false
+  tasks:
+  - name: Terminate instances that were previously launched
+    amazon.aws.ec2: # тот же модуль, но теперь нам всего то удалить надо, поэтому передаем список и радуемся
+      state: 'absent'
+      region: us-east-2
+      instance_ids: '{{ ec2.instance_ids }}'
+      aws_access_key: AKIAXCQMX4YHR7SEWMPB
+      aws_secret_key: $$$$$$$$$$$$$$$$$$$$$$$$$$$

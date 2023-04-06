@@ -1,0 +1,17 @@
+[Unit]
+Description=Gunicorn for serving {{app_name}}
+After=network.target
+
+[Service]
+User=vagrant
+{% if ansible_os_family == "RedHat" %}
+Group=nginx
+{% else %}
+Group=www-data
+{% endif %}
+WorkingDirectory=/apps/{{app_name}}/app
+Environment="PATH=/apps/{{app_name}}/venv/bin"
+ExecStart=/apps/{{app_name}}/venv/bin/gunicorn --workers 3 --bind unix:{{app_name}}.sock -m 007 wsgi:app
+
+[Install]
+WantedBy=multi-user.target

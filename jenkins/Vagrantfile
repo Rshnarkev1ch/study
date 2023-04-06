@@ -1,0 +1,18 @@
+Vagrant.configure("2") do |config|
+  config.vm.define "slave1" do |slave1|
+   slave1.vm.box = "ubuntu/focal64"
+   slave1.vm.hostname = "slave1"
+   slave1.vbguest.auto_update = false
+   slave1.vm.network "private_network", ip: "192.168.60.12"
+   slave1.vm.provision "file", source: "files/jenkins", destination: "/home/vagrant/.ssh/" 
+   slave1.vm.provision "file", source: "files/jenkins.pub", destination: "/home/vagrant/.ssh/"
+   slave1.vm.provision "shell", inline: <<-SHELL 
+   chmod 600 /home/vagrant/.ssh/jenkins
+   chmod 600 /home/vagrant/.ssh/jenkins.pub
+   sudo apt-get update
+   sudo apt-get install -y openjdk-11-jdk git maven
+   sudo groupadd jenkins
+   sudo useradd -d /home/jenkins -m -r -s /bin/bash -g jenkins jenkins
+   SHELL
+  end
+end
